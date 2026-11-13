@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hippo vs Milk Squad</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main id="game-container">
+
+        <!-- Cabeçalho do jogo -->
+        <header id="game-header">
+
+            <h1>HIPPO VS MILK SQUAD</h1>
+
+            <p class="subtitle">
+                🔥 FOGO VS LEITE 🥛
+            </p>
+
+        </header>
+
+        <!-- Placar -->
+        <section id="scoreboard">
+
+            <div class="team team-hippo">
+                <span class="team-name">🦛 HIPOPÓTAMO</span>
+                <span id="hippo-score" class="score">0</span>
+            </div>
+
+            <div class="round-info">
+                <span>RODADA</span>
+                <strong id="round-number">1</strong>
+                <span class="versus">VS</span>
+            </div>
+
+            <div class="team team-cows">
+                <span class="team-name">🐄 VACAS</span>
+                <span id="cows-score" class="score">0</span>
+            </div>
+
+        </section>
+
+        <!-- Barra de domínio -->
+        <section id="power-section">
+
+            <div class="power-labels">
+                <span id="hippo-power-label">🔥 50%</span>
+                <span id="cows-power-label">50% 🥛</span>
+            </div>
+
+            <div id="power-bar">
+
+                <div id="hippo-power-fill"></div>
+
+                <div id="cows-power-fill"></div>
+
+            </div>
+
+        </section>
+
+        <!-- Arena principal -->
+        <section id="arena-container">
+
+            <canvas
+                id="game-canvas"
+                width="1280"
+                height="720"
+            >
+                Seu navegador não suporta HTML5 Canvas.
+            </canvas>
+
+            <!-- Mensagem de vitória -->
+            <div id="victory-overlay" hidden>
+
+                <h2 id="victory-title">
+                    VITÓRIA!
+                </h2>
+
+                <p id="victory-message"></p>
+
+                <span id="restart-countdown">
+                    Próxima rodada em 5 segundos...
+                </span>
+
+            </div>
+
+            <!-- Notificações de eventos -->
+            <div id="event-notification" hidden>
+                <span id="event-text"></span>
+            </div>
+
+        </section>
+
+        <!-- Instruções para espectadores -->
+        <section id="live-instructions">
+
+            <h2>ESCOLHA SEU TIME!</h2>
+
+            <div class="instructions-grid">
+
+                <div class="hippo-instruction">
+                    <span>🔥</span>
+                    <p>Comente FOGO</p>
+                    <small>Fortaleça o hipopótamo!</small>
+                </div>
+
+                <div class="cow-instruction">
+                    <span>🥛</span>
+                    <p>Comente LEITE</p>
+                    <small>Fortaleça as vacas!</small>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Painel de testes -->
+        <section id="debug-panel">
+
+            <h3>PAINEL DE TESTES</h3>
+
+            <div class="debug-buttons">
+
+                <button id="boost-hippo">
+                    🔥 + Fogo
+                </button>
+
+                <button id="boost-cows">
+                    🥛 + Leite
+                </button>
+
+                <button id="max-fire">
+                    💥 Fogo máximo
+                </button>
+
+                <button id="max-milk">
+                    🌊 Leite máximo
+                </button>
+
+                <button id="reset-game">
+                    🔄 Reiniciar
+                </button>
+
+                <button id="toggle-pause">
+                    ⏸ Pausar
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- Rodapé -->
+        <footer id="game-footer">
+
+            <span>HIPPO VS MILK SQUAD</span>
+
+            <span>V0.1.0 — ALPHA</span>
+
+        </footer>
+
+    </main>
+
+    <!-- Código principal do jogo -->
+    <script src="game.js"></script>
+
+</body>
+</html>
