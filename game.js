@@ -1191,8 +1191,8 @@ function update(dt) {
 // Team HP: visual representation of the existing tug-of-war meter.
 function drawTeamHP() {
     const teams = [
-        {x:hippo.x, y:getSpriteRect(hippo).y-12, hp:game.displayedPower, color:"#ff9b48", dark:"#a83d24", width:128},
-        {x:cows.reduce((sum,c)=>sum+c.x,0)/cows.length, y:Math.min(...cows.map(c=>getSpriteRect(c).y))-12, hp:100-game.displayedPower, color:"#9cdbff", dark:"#3479ad", width:180}
+        {name:"HIPOPÓTAMO", x:hippo.x, y:getSpriteRect(hippo).y-12, hp:game.displayedPower, color:"#ff9b48", dark:"#a83d24", width:128},
+        {name:"VACAS", x:cows.reduce((sum,c)=>sum+c.x,0)/cows.length, y:Math.min(...cows.map(c=>getSpriteRect(c).y))-12, hp:100-game.displayedPower, color:"#9cdbff", dark:"#3479ad", width:180}
     ];
     ctx.save();
     ctx.textAlign="center";
@@ -1201,6 +1201,26 @@ function drawTeamHP() {
         const x=Math.round(clamp(t.x-t.width/2,6,WIDTH-t.width-6));
         const y=Math.round(clamp(t.y-16,6,HEIGHT-22));
         const hp=clamp(t.hp,0,100);
+        // Draw names in the arena, immediately above the floating HP bars.
+        ctx.font = 'bold 17px "Press Start 2P", monospace';
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#10151d";
+        const nameX = x + t.width / 2;
+        const nameY = y - 13;
+        ctx.strokeText(t.name, nameX, nameY);
+        if (hp > 80) {
+            const w = ctx.measureText(t.name).width;
+            const gradient = ctx.createLinearGradient(nameX-w/2, nameY-10, nameX+w/2, nameY+10);
+            for (let i=0; i<=8; i++) {
+                gradient.addColorStop(i/8, "hsl(" + ((i*45 + game.time*180)%360) + ",100%,65%)");
+            }
+            ctx.fillStyle = gradient;
+        } else {
+            ctx.fillStyle = t.color;
+        }
+        ctx.fillText(t.name, nameX, nameY);
+
         ctx.fillStyle="#10151d";
         ctx.fillRect(x-2,y-2,t.width+4,20);
         ctx.fillStyle="#c4c8bd";
