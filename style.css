@@ -37,3 +37,31 @@ button{font:inherit} [hidden]{display:none!important}
 #game-footer{display:flex;justify-content:space-between;gap:12px;padding:24px 0 8px;color:var(--muted);font-size:18px}
 @media(max-width:600px){#game-container{width:94%;padding-top:14px}#game-header{padding:12px 6px}#scoreboard{grid-template-columns:1fr 70px 1fr;gap:6px}.team,.round-info{min-height:80px;padding:8px 3px}.round-info span{font-size:8px}#round-number{font-size:18px}.debug-buttons{grid-template-columns:repeat(2,1fr)}#arena-container{border-width:3px}.subtitle{font-size:17px;letter-spacing:1px}.instructions-grid small{font-size:16px}#game-footer{font-size:14px}}
 @media(prefers-reduced-motion:reduce){#victory-title{animation:none}}
+
+/* Arcade team names: black outline and diagonal animated rainbow. */
+.team-name {
+    -webkit-text-stroke: 1px #10151d;
+    paint-order: stroke fill;
+    text-shadow: 2px 2px 0 #10151d, -1px -1px 0 #10151d;
+}
+.team-hippo .team-name.power-rgb,
+.team-cows .team-name.power-rgb {
+    background-image: repeating-linear-gradient(135deg,#ff3c55 0%,#ff9e32 12.5%,#ffe83e 25%,#53ef75 37.5%,#39d9ff 50%,#7065ff 62.5%,#f04de7 75%,#ff3c55 87.5%,#ff9e32 100%);
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px #10151d;
+    paint-order: stroke fill;
+    text-shadow: none;
+    filter: drop-shadow(1px 2px 0 #10151d);
+    animation: team-rainbow 2s linear infinite;
+}
+@keyframes team-rainbow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .team-name.power-rgb { animation: none; }
+}
