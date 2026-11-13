@@ -1184,6 +1184,49 @@ function update(dt) {
 // RENDERIZAÇÃO
 // ==========================================
 
+// Team HP: visual representation of the existing tug-of-war meter.
+function drawTeamHP() {
+    const teams = [
+        {name:"HIPPO", x:hippo.x, y:getSpriteRect(hippo).y-44, hp:game.displayedPower, color:"#ff9b48", dark:"#a83d24", width:184},
+        {name:"MILK SQUAD", x:cows.reduce((sum,c)=>sum+c.x,0)/cows.length, y:Math.min(...cows.map(c=>getSpriteRect(c).y))-44, hp:100-game.displayedPower, color:"#9cdbff", dark:"#3479ad", width:220}
+    ];
+    ctx.save();
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    for(const t of teams){
+        const x=Math.round(clamp(t.x-t.width/2,8,WIDTH-t.width-8));
+        const y=Math.round(clamp(t.y,30,HEIGHT-40));
+        const hp=clamp(t.hp,0,100);
+        ctx.font='12px "Press Start 2P", monospace';
+        ctx.fillStyle="#10151d";
+        ctx.fillText(t.name,x+t.width/2+2,y-11);
+        ctx.fillStyle=t.color;
+        ctx.fillText(t.name,x+t.width/2,y-13);
+        ctx.fillStyle="#10151d";
+        ctx.fillRect(x-3,y-3,t.width+6,29);
+        ctx.fillStyle="#b3b8b0";
+        ctx.fillRect(x,y,t.width,23);
+        ctx.fillStyle="#402c35";
+        ctx.fillRect(x+3,y+3,t.width-6,17);
+        const fill=Math.round((t.width-6)*hp/100);
+        ctx.fillStyle=t.dark;
+        ctx.fillRect(x+3,y+3,fill,17);
+        ctx.fillStyle=t.color;
+        ctx.fillRect(x+3,y+3,fill,11);
+        ctx.fillStyle="#ffffff55";
+        ctx.fillRect(x+3,y+3,fill,3);
+        ctx.fillStyle="#10151d55";
+        for(let i=1;i<10;i++)ctx.fillRect(x+3+Math.floor((t.width-6)*i/10),y+3,2,17);
+        ctx.font='10px "Press Start 2P", monospace';
+        const label="HP "+Math.round(hp)+"%";
+        ctx.fillStyle="#10151d";
+        ctx.fillText(label,x+t.width/2+1,y+13);
+        ctx.fillStyle="#fff5dc";
+        ctx.fillText(label,x+t.width/2,y+12);
+    }
+    ctx.restore();
+}
+
 function render() {
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -1235,6 +1278,8 @@ function render() {
     drawParticles();
 
     ctx.restore();
+
+    drawTeamHP();
 
     // Indicador de pausa
     if (game.paused) {
