@@ -6,7 +6,7 @@
   "use strict";
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
   const endpoint = "ws://127.0.0.1:8765";
-  const cooldown = 2000;
+  const cooldown = 200;
   const lastAttack = new Map();
   const teams = new Map();
   let socket = null, retry = null, enabled = false, delay = 1000;
