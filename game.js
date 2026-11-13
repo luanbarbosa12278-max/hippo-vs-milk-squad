@@ -897,6 +897,10 @@ function updateUI() {
 
     UI.roundNumber.textContent =
         game.round;
+
+    // Arcade name power-up: only the team above 80% gets rainbow.
+    document.querySelector(".team-hippo .team-name")?.classList.toggle("power-rgb", game.displayedPower > 80);
+    document.querySelector(".team-cows .team-name")?.classList.toggle("power-rgb", 100 - game.displayedPower > 80);
 }
 
 // ==========================================
