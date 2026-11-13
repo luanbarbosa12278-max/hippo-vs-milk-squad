@@ -44,7 +44,7 @@ const CONFIG = {
     collisionSpeed: 5,
 
     // Limite de partículas
-    maxParticles: 180
+    maxParticles: 320
 };
 
 // ==========================================
@@ -97,6 +97,8 @@ const game = {
     shake: 0,
 
     particles: [],
+    particleCarry: 0,
+    impact: 0,
 
     fireBoostUntil: 0,
     milkBoostUntil: 0,
@@ -551,9 +553,7 @@ function drawFire() {
 
     const strength = game.displayedPower / 100;
 
-    const pulse = Math.sin(
-        game.time * 20
-    ) * 5;
+    const pulse = Math.sin(game.time * 24) * 9 + Math.sin(game.time * 43) * 4;
 
     const height = 95 + strength * 95 + pulse;
 
@@ -563,7 +563,7 @@ function drawFire() {
 
     ctx.rotate(angle);
 
-    ctx.globalAlpha = 0.96;
+    ctx.globalAlpha = 0.94 + Math.sin(game.time * 28) * 0.05;
 
     ctx.drawImage(
 
@@ -608,9 +608,7 @@ function drawMilk(cow, index) {
     const strength =
         (100 - game.displayedPower) / 100;
 
-    const pulse = Math.sin(
-        game.time * 17 + index * 2
-    ) * 4;
+    const pulse = Math.sin(game.time * 22 + index * 2) * 7;
 
     const height = 48 + strength * 65 + pulse;
 
@@ -620,7 +618,7 @@ function drawMilk(cow, index) {
 
     ctx.rotate(angle);
 
-    ctx.globalAlpha = 0.94;
+    ctx.globalAlpha = 0.94 + Math.sin(game.time * 19 + index) * 0.05;
 
     // O PNG do leite já aponta para a esquerda.
     // Por isso não precisamos espelhar a imagem.
@@ -718,7 +716,9 @@ function spawnCollisionParticles(dt) {
     const x = game.collisionX;
     const y = getCollisionY();
 
-    const count = Math.floor(dt * 90);
+    game.particleCarry += dt * (110 + game.impact * 100);
+    const count = Math.floor(game.particleCarry);
+    game.particleCarry -= count;
 
     for (let i = 0; i < count; i++) {
 
@@ -740,6 +740,42 @@ function spawnCollisionParticles(dt) {
 
             createParticle("milk", x, y);
         }
+    }
+}
+
+function spawnJetParticles(dt) {
+    const emitters = [hippo, ...cows];
+    for (const character of emitters) {
+        const fire = character === hippo;
+        const strength = (fire ? game.displayedPower : 100 - game.displayedPower) / 100;
+        if (Math.random() > dt * (12 + strength * 20)) continue;
+        const origin = getEmitter(character);
+        const t = random(0.08, 0.9);
+        const x = lerp(origin.x, game.collisionX, t);
+        const y = lerp(origin.y, getCollisionY(), t) + random(-18, 18);
+        const before = game.particles.length;
+        createParticle(fire ? "fire" : "milk", x, y);
+        if (game.particles.length === before) continue;
+        const p = game.particles[before];
+        p.vx = (fire ? 1 : -1) * random(90, 240);
+        p.vy = random(-65, 65);
+        p.life = p.maxLife = random(0.12, 0.35);
+        p.size = random(3, 7);
+    }
+}
+
+function burstImpact() {
+    game.impact = 1;
+    const x = game.collisionX, y = getCollisionY();
+    for (let i = 0; i < 42; i++) {
+        const before = game.particles.length;
+        createParticle(i % 3 === 0 ? "steam" : i % 2 ? "fire" : "milk", x, y);
+        if (game.particles.length === before) break;
+        const p = game.particles[before];
+        const angle = random(0, Math.PI * 2);
+        const speed = random(100, 330);
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
     }
 }
 
@@ -770,119 +806,62 @@ function updateParticles(dt) {
 }
 
 function drawParticles() {
-
     ctx.save();
-
-    for (const particle of game.particles) {
-
-        const alpha = clamp(
-            particle.life / particle.maxLife,
-            0,
-            1
-        );
-
-        ctx.globalAlpha = alpha;
-
-        if (particle.type === "steam") {
-
-            ctx.fillStyle = "#e2e8f0";
-
-            ctx.globalAlpha = alpha * 0.35;
-
-            ctx.beginPath();
-
-            ctx.arc(
-
-                particle.x,
-
-                particle.y,
-
-                particle.size,
-
-                0,
-
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
+    for (const p of game.particles) {
+        const alpha = clamp(p.life / p.maxLife, 0, 1);
+        const x = Math.round(p.x / 3) * 3;
+        const y = Math.round(p.y / 3) * 3;
+        const n = Math.max(3, Math.round(p.size / 3) * 3);
+        if (p.type === "steam") {
+            ctx.globalAlpha = alpha * 0.55;
+            ctx.fillStyle = "#8498a2";
+            ctx.fillRect(x - n, y - n / 2, n * 2, n);
+            ctx.fillRect(x - n / 2, y - n, n, n * 2);
+            ctx.fillStyle = "#d9e7e8";
+            ctx.fillRect(x - n / 2, y - n / 2, n, n);
+            ctx.fillStyle = "#f7ffff";
+            ctx.fillRect(x - n / 2, y - n / 2, n / 2, 3);
         } else {
-
-            ctx.fillStyle =
-                particle.type === "fire"
-                    ? "#ffb347"
-                    : "#f8fafc";
-
-            ctx.fillRect(
-
-                Math.round(particle.x),
-
-                Math.round(particle.y),
-
-                particle.size,
-
-                particle.size
-            );
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.type === "fire" ? "#d94b22" : "#79b9dd";
+            ctx.fillRect(x - 3, y - 3, n + 6, n + 6);
+            ctx.fillStyle = p.type === "fire" ? "#ffb53e" : "#dff6ff";
+            ctx.fillRect(x, y, n, n);
+            ctx.fillStyle = "#fffbe4";
+            ctx.fillRect(x, y, Math.max(2, n / 2), 3);
         }
     }
-
     ctx.restore();
 }
 
-// ==========================================
-// BRILHO DA COLISÃO
-// ==========================================
-
 function drawCollisionGlow() {
-
-    const x = game.collisionX;
-    const y = getCollisionY();
-
-    const radius = 35 + Math.sin(
-        game.time * 15
-    ) * 6;
-
+    const x = Math.round(game.collisionX / 4) * 4;
+    const y = Math.round(getCollisionY() / 4) * 4;
+    const r = 16 + Math.round((Math.sin(game.time * 24) + 1) * 6) + game.impact * 22;
     ctx.save();
-
-    const gradient = ctx.createRadialGradient(
-
-        x,
-        y,
-        0,
-
-        x,
-        y,
-        radius
-    );
-
-    gradient.addColorStop(
-        0,
-        "rgba(255, 255, 230, 0.8)"
-    );
-
-    gradient.addColorStop(
-        0.35,
-        "rgba(255, 200, 100, 0.35)"
-    );
-
-    gradient.addColorStop(
-        1,
-        "rgba(255, 255, 255, 0)"
-    );
-
-    ctx.fillStyle = gradient;
-
-    ctx.fillRect(
-
-        x - radius,
-
-        y - radius,
-
-        radius * 2,
-
-        radius * 2
-    );
-
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = "#f48b36";
+    ctx.fillRect(x - r, y - 6, r * 2, 12);
+    ctx.fillRect(x - 6, y - r, 12, r * 2);
+    ctx.fillStyle = "#fff2a8";
+    ctx.fillRect(x - r / 2, y - 4, r, 8);
+    ctx.fillRect(x - 4, y - r / 2, 8, r);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x - 6, y - 6, 12, 12);
+    if (game.impact > 0.02) {
+        const radius = 24 + (1 - game.impact) * 105;
+        ctx.globalAlpha = game.impact * 0.7;
+        ctx.strokeStyle = "#fff0b4";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        for (let i = 0; i <= 8; i++) {
+            const a = i * Math.PI / 4;
+            const px = x + Math.round(Math.cos(a) * radius / 4) * 4;
+            const py = y + Math.round(Math.sin(a) * radius / 4) * 4;
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+    }
     ctx.restore();
 }
 
@@ -990,6 +969,7 @@ function boostTeam(team, amount, special = false) {
     game.power = clamp(game.power, 0, 100);
 
     game.shake = special ? 9 : 3;
+    if (special) burstImpact();
 }
 
 // ==========================================
@@ -1037,6 +1017,7 @@ function finishRound(winner) {
     UI.victoryOverlay.hidden = false;
 
     game.shake = 12;
+    burstImpact();
 
     updateUI();
 }
@@ -1074,6 +1055,8 @@ function resetBattle() {
     game.shake = 0;
 
     game.particles = [];
+    game.particleCarry = 0;
+    game.impact = 0;
 
     UI.victoryOverlay.hidden = true;
 
@@ -1149,8 +1132,10 @@ function update(dt) {
     if (!game.finished) {
 
         spawnCollisionParticles(dt);
+        spawnJetParticles(dt);
     }
 
+    game.impact = Math.max(0, game.impact - dt * 2.2);
     updateParticles(dt);
 
     // Verifica a vitória
