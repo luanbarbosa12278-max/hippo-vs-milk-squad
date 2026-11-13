@@ -1,0 +1,15 @@
+{
+  "name": "hippo-live-local",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "simulate": "node simulator.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
