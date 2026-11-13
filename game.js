@@ -105,7 +105,9 @@ const game = {
 
     restartAt: 0,
 
-    winner: null
+    winner: null,
+    recoveryUntil: 0,
+    recoveryActive: false
 };
 
 // ==========================================
@@ -971,6 +973,12 @@ function boostTeam(team, amount, special = false) {
     }
 
     game.power = clamp(game.power, 0, 100);
+    if (game.recoveryActive && team === "cows" && game.power <= 80) {
+        game.recoveryActive = false;
+        game.recoveryUntil = 0;
+        notify("🥛 VIRADA! VACAS RECUPERADAS!");
+        burstImpact();
+    }
 
     game.shake = special ? 9 : 3;
     if (special) burstImpact();
@@ -1052,6 +1060,8 @@ function resetBattle() {
     game.winner = null;
 
     game.restartAt = 0;
+    game.recoveryActive = false;
+    game.recoveryUntil = 0;
 
     game.fireBoostUntil = 0;
     game.milkBoostUntil = 0;
@@ -1142,6 +1152,12 @@ function update(dt) {
     game.impact = Math.max(0, game.impact - dt * 2.2);
     updateParticles(dt);
 
+    if (game.recoveryActive && game.time >= game.recoveryUntil) {
+        game.recoveryActive = false;
+        game.recoveryUntil = 0;
+        if (game.power > 80) finishRound("hippo");
+    }
+
     // Verifica a vitória
     if (!game.finished) {
 
@@ -1150,7 +1166,12 @@ function update(dt) {
             game.displayedPower >= 99
         ) {
 
-            finishRound("hippo");
+            if (!game.recoveryActive) {
+                game.recoveryActive = true;
+                game.recoveryUntil = game.time + 15;
+                notify("⚠️ ÚLTIMA CHANCE DAS VACAS!");
+                burstImpact();
+            }
         }
 
         if (
@@ -1246,6 +1267,46 @@ function drawTeamHP() {
     ctx.restore();
 }
 
+function drawRecoveryCountdown() {
+    if (!game.recoveryActive || game.finished) return;
+    const remaining = Math.max(0, game.recoveryUntil - game.time);
+    const seconds = Math.ceil(remaining);
+    const x = WIDTH / 2, y = 135;
+    const pulse = 1 + 0.09 * Math.sin(game.time * (seconds <= 5 ? 15 : 7));
+    const color = seconds <= 5 ? "#ff6945" : "#ffe28b";
+    ctx.save();
+    ctx.fillStyle = "#10151de8";
+    ctx.fillRect(x-235,y-79,470,184);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x-235,y-79,470,184);
+    ctx.fillStyle = "#29323c";
+    ctx.fillRect(x-210,y+83,420,9);
+    ctx.fillStyle = color;
+    ctx.fillRect(x-210,y+83,420*remaining/15,9);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.font = '16px "Press Start 2P", monospace';
+    ctx.fillStyle = "#fff1d0";
+    ctx.fillText("ÚLTIMA CHANCE!",x,y-52);
+    ctx.save();
+    ctx.translate(x,y+5);
+    ctx.scale(pulse,pulse);
+    ctx.font = 'bold 65px "Press Start 2P", monospace';
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#080d12";
+    const label = String(seconds).padStart(2,"0");
+    ctx.strokeText(label,0,0);
+    ctx.fillStyle = color;
+    ctx.fillText(label,0,0);
+    ctx.restore();
+    ctx.font = '11px "Press Start 2P", monospace';
+    ctx.fillStyle = "#bdeaff";
+    ctx.fillText("VACAS: RECUPEREM 20% DE HP!",x,y+58);
+    ctx.restore();
+}
+
 function render() {
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -1298,6 +1359,8 @@ function render() {
     drawTeamHP();
 
     ctx.restore();
+
+    drawRecoveryCountdown();
 
     // Indicador de pausa
     if (game.paused) {
@@ -1563,7 +1626,9 @@ window.LiveBattle = {
 
             paused: game.paused,
 
-            finished: game.finished
+            finished: game.finished,
+            recoveryActive: game.recoveryActive,
+            recoverySeconds: game.recoveryActive ? Math.max(0, Math.ceil(game.recoveryUntil - game.time)) : 0
         };
     }
 };
