@@ -2,7 +2,7 @@
 const WebSocket = require("ws");
 const config = require("./config");
 const ws = new WebSocket("ws://"+config.host+":"+config.port);
-const viewers = Array.from({length:20},(_,i)=>"sim_"+(i+1));
+const viewers = Array.from({length:100},(_,i)=>"sim_"+(i+1));
 let timer;
 ws.on("open",()=>{
   console.log("Simulador conectado. Ctrl+C para parar.");
@@ -10,7 +10,7 @@ ws.on("open",()=>{
     const userId=viewers[Math.floor(Math.random()*viewers.length)];
     const comment=Math.random()<0.5?"FOGO":"LEITE";
     if(ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({type:"chat",userId,comment}));
-  },700);
+  },100);
 });
 ws.on("error",err=>{console.error("Inicie o servidor primeiro:",err.message);process.exitCode=1;});
 ws.on("close",()=>clearInterval(timer));
