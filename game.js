@@ -1187,42 +1187,37 @@ function update(dt) {
 // Team HP: visual representation of the existing tug-of-war meter.
 function drawTeamHP() {
     const teams = [
-        {name:"HIPPO", x:hippo.x, y:getSpriteRect(hippo).y-44, hp:game.displayedPower, color:"#ff9b48", dark:"#a83d24", width:184},
-        {name:"MILK SQUAD", x:cows.reduce((sum,c)=>sum+c.x,0)/cows.length, y:Math.min(...cows.map(c=>getSpriteRect(c).y))-44, hp:100-game.displayedPower, color:"#9cdbff", dark:"#3479ad", width:220}
+        {x:hippo.x, y:getSpriteRect(hippo).y-12, hp:game.displayedPower, color:"#ff9b48", dark:"#a83d24", width:128},
+        {x:cows.reduce((sum,c)=>sum+c.x,0)/cows.length, y:Math.min(...cows.map(c=>getSpriteRect(c).y))-12, hp:100-game.displayedPower, color:"#9cdbff", dark:"#3479ad", width:180}
     ];
     ctx.save();
     ctx.textAlign="center";
     ctx.textBaseline="middle";
     for(const t of teams){
-        const x=Math.round(clamp(t.x-t.width/2,8,WIDTH-t.width-8));
-        const y=Math.round(clamp(t.y,30,HEIGHT-40));
+        const x=Math.round(clamp(t.x-t.width/2,6,WIDTH-t.width-6));
+        const y=Math.round(clamp(t.y-16,6,HEIGHT-22));
         const hp=clamp(t.hp,0,100);
-        ctx.font='12px "Press Start 2P", monospace';
         ctx.fillStyle="#10151d";
-        ctx.fillText(t.name,x+t.width/2+2,y-11);
-        ctx.fillStyle=t.color;
-        ctx.fillText(t.name,x+t.width/2,y-13);
-        ctx.fillStyle="#10151d";
-        ctx.fillRect(x-3,y-3,t.width+6,29);
-        ctx.fillStyle="#b3b8b0";
-        ctx.fillRect(x,y,t.width,23);
+        ctx.fillRect(x-2,y-2,t.width+4,20);
+        ctx.fillStyle="#c4c8bd";
+        ctx.fillRect(x,y,t.width,16);
         ctx.fillStyle="#402c35";
-        ctx.fillRect(x+3,y+3,t.width-6,17);
-        const fill=Math.round((t.width-6)*hp/100);
+        ctx.fillRect(x+2,y+2,t.width-4,12);
+        const fill=Math.round((t.width-4)*hp/100);
         ctx.fillStyle=t.dark;
-        ctx.fillRect(x+3,y+3,fill,17);
+        ctx.fillRect(x+2,y+2,fill,12);
         ctx.fillStyle=t.color;
-        ctx.fillRect(x+3,y+3,fill,11);
+        ctx.fillRect(x+2,y+2,fill,8);
         ctx.fillStyle="#ffffff55";
-        ctx.fillRect(x+3,y+3,fill,3);
+        ctx.fillRect(x+2,y+2,fill,2);
         ctx.fillStyle="#10151d55";
-        for(let i=1;i<10;i++)ctx.fillRect(x+3+Math.floor((t.width-6)*i/10),y+3,2,17);
-        ctx.font='10px "Press Start 2P", monospace';
+        for(let i=1;i<10;i++)ctx.fillRect(x+2+Math.floor((t.width-4)*i/10),y+2,1,12);
+        ctx.font='bold 10px monospace';
         const label="HP "+Math.round(hp)+"%";
         ctx.fillStyle="#10151d";
-        ctx.fillText(label,x+t.width/2+1,y+13);
+        ctx.fillText(label,x+t.width/2+1,y+9);
         ctx.fillStyle="#fff5dc";
-        ctx.fillText(label,x+t.width/2,y+12);
+        ctx.fillText(label,x+t.width/2,y+8);
     }
     ctx.restore();
 }
@@ -1276,10 +1271,9 @@ function render() {
     drawCollisionGlow();
 
     drawParticles();
+    drawTeamHP();
 
     ctx.restore();
-
-    drawTeamHP();
 
     // Indicador de pausa
     if (game.paused) {
