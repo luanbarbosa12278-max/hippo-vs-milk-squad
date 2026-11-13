@@ -107,7 +107,8 @@ const game = {
 
     winner: null,
     recoveryUntil: 0,
-    recoveryActive: false
+    recoveryActive: false,
+    recoveryTeam: null
 };
 
 // ==========================================
@@ -973,10 +974,11 @@ function boostTeam(team, amount, special = false) {
     }
 
     game.power = clamp(game.power, 0, 100);
-    if (game.recoveryActive && team === "cows" && game.power <= 80) {
+    if (game.recoveryActive && team === game.recoveryTeam && (team === "cows" ? game.power <= 80 : game.power >= 20)) {
         game.recoveryActive = false;
         game.recoveryUntil = 0;
-        notify("🥛 VIRADA! VACAS RECUPERADAS!");
+        notify(team === "cows" ? "🥛 VIRADA! VACAS RECUPERADAS!" : "🔥 VIRADA! HIPOPÓTAMO RECUPERADO!");
+        game.recoveryTeam = null;
         burstImpact();
     }
 
@@ -1062,6 +1064,7 @@ function resetBattle() {
     game.restartAt = 0;
     game.recoveryActive = false;
     game.recoveryUntil = 0;
+    game.recoveryTeam = null;
 
     game.fireBoostUntil = 0;
     game.milkBoostUntil = 0;
@@ -1155,7 +1158,10 @@ function update(dt) {
     if (game.recoveryActive && game.time >= game.recoveryUntil) {
         game.recoveryActive = false;
         game.recoveryUntil = 0;
-        if (game.power > 80) finishRound("hippo");
+        const recovering = game.recoveryTeam;
+        game.recoveryTeam = null;
+        if (recovering === "cows" && game.power > 80) finishRound("hippo");
+        if (recovering === "hippo" && game.power < 20) finishRound("cows");
     }
 
     // Verifica a vitória
@@ -1169,6 +1175,7 @@ function update(dt) {
             if (!game.recoveryActive) {
                 game.recoveryActive = true;
                 game.recoveryUntil = game.time + 15;
+                game.recoveryTeam = "cows";
                 notify("⚠️ ÚLTIMA CHANCE DAS VACAS!");
                 burstImpact();
             }
@@ -1179,7 +1186,13 @@ function update(dt) {
             game.displayedPower <= 1
         ) {
 
-            finishRound("cows");
+            if (!game.recoveryActive) {
+                game.recoveryActive = true;
+                game.recoveryUntil = game.time + 15;
+                game.recoveryTeam = "hippo";
+                notify("⚠️ ÚLTIMA CHANCE DO HIPOPÓTAMO!");
+                burstImpact();
+            }
         }
 
     } else {
@@ -1302,8 +1315,8 @@ function drawRecoveryCountdown() {
     ctx.fillText(label,0,0);
     ctx.restore();
     ctx.font = '11px "Press Start 2P", monospace';
-    ctx.fillStyle = "#bdeaff";
-    ctx.fillText("VACAS: RECUPEREM 20% DE HP!",x,y+58);
+    ctx.fillStyle = game.recoveryTeam === "hippo" ? "#ffb477" : "#bdeaff";
+    ctx.fillText(game.recoveryTeam === "hippo" ? "HIPPO: RECUPERE 20% DE HP!" : "VACAS: RECUPEREM 20% DE HP!",x,y+58);
     ctx.restore();
 }
 
@@ -1628,6 +1641,7 @@ window.LiveBattle = {
 
             finished: game.finished,
             recoveryActive: game.recoveryActive,
+            recoveryTeam: game.recoveryTeam,
             recoverySeconds: game.recoveryActive ? Math.max(0, Math.ceil(game.recoveryUntil - game.time)) : 0
         };
     }
