@@ -34,8 +34,8 @@ const CONFIG = {
     initialPower: 50,
 
     // Força adicionada pelos botões
-    normalBoost: 8,
-    maxBoost: 25,
+    normalBoost: 4,
+    maxBoost: 12.5,
 
     // Tempo para reiniciar a rodada
     restartDelay: 5000,
@@ -1503,7 +1503,7 @@ function setupKeyboard() {
 
 window.LiveBattle = {
 
-    fire(amount = 8) {
+    fire(amount = 4) {
 
         if (
             Number.isFinite(amount) &&
@@ -1517,7 +1517,7 @@ window.LiveBattle = {
         }
     },
 
-    milk(amount = 8) {
+    milk(amount = 4) {
 
         if (
             Number.isFinite(amount) &&
@@ -1533,12 +1533,12 @@ window.LiveBattle = {
 
     maxFire() {
 
-        boostTeam("hippo", 25, true);
+        boostTeam("hippo", CONFIG.maxBoost, true);
     },
 
     maxMilk() {
 
-        boostTeam("cows", 25, true);
+        boostTeam("cows", CONFIG.maxBoost, true);
     },
 
     reset() {
